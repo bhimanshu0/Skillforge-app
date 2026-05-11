@@ -1,0 +1,251 @@
+<div class="sf-page fade-in">
+  <div class="sf-page-header">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb sf-breadcrumb mb-1">
+          <li class="breadcrumb-item sf-muted">Home</li>
+          <li class="breadcrumb-item active">Training Catalog</li>
+        </ol>
+      </nav>
+      <h2 class="sf-page-title">
+        @if (isTrainer) { My Courses } @else { Training Catalog }
+      </h2>
+    </div>
+    @if (canCreate) {
+    <button class="sf-btn-primary" type="button" (click)="openCreate()">
+      <i class="bi bi-plus-circle me-1"></i>Create Course
+    </button>
+    }
+  </div>
+
+  <!-- Toast -->
+  @if (toast()) {
+  <div class="sf-toast fade-in" [class.sf-toast-error]="toastType() === 'error'">
+    <i class="bi" [ngClass]="toastType() === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+    {{ toast() }}
+  </div>
+  }
+
+  <!-- Filters -->
+  <div class="sf-card mb-3">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      @if (isTrainer) {
+      <span class="sf-chip" style="border-color:var(--sf-primary);color:var(--sf-primary);">
+        <i class="bi bi-person-video2 me-1"></i>Showing only your courses
+      </span>
+      }
+      <div class="sf-input-group" style="max-width:280px;">
+        <span class="sf-input-icon"><i class="bi bi-search"></i></span>
+        <input class="sf-input" placeholder="Search title or description…" [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)" />
+      </div>
+      <select class="sf-select" style="width:auto;" [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)">
+        <option>All</option>
+        <option>Live</option>
+        <option>Draft</option>
+      </select>
+      <button class="sf-btn-ghost" type="button" (click)="searchTerm.set(''); statusFilter.set('All')">
+        <i class="bi bi-x-circle me-1"></i>Reset
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+  <app-spinner></app-spinner>
+  } @else {
+  <div class="sf-card">
+    <div style="max-height:460px;overflow-y:auto;">
+      <table class="table sf-table mb-0 align-middle" style="table-layout:fixed;width:100%;">
+        <colgroup>
+          <col style="width:22%">
+          <col style="width:30%">
+          <col style="width:12%">
+          <col style="width:12%">
+          <col style="width:24%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th style="position:sticky;top:0;z-index:1;background:var(--sf-panel);">Course</th>
+            <th style="position:sticky;top:0;z-index:1;background:var(--sf-panel);">Description</th>
+            <th style="position:sticky;top:0;z-index:1;background:var(--sf-panel);">Duration</th>
+            <th style="position:sticky;top:0;z-index:1;background:var(--sf-panel);">Status</th>
+            <th style="position:sticky;top:0;z-index:1;background:var(--sf-panel);">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (course of filteredCourses(); track course.courseID) {
+            <tr class="sf-table-row">
+              <td class="fw-semibold">{{ course.title }}</td>
+              <td class="sf-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                {{ course.description || '—' }}
+              </td>
+              <td>{{ course.duration }}h</td>
+              <td>
+                <app-status-badge [status]="course.status ? 'Live' : 'Draft'"></app-status-badge>
+              </td>
+              <td>
+                <div class="d-flex gap-1">
+                  @if (canEnroll && course.status) {
+                    <button class="sf-btn-sm sf-btn-sm-primary" type="button" (click)="enroll(course.courseID)">
+                      <i class="bi bi-plus me-1"></i>Enroll
+                    </button>
+                  }
+                  @if (canCreate) {
+                    <button class="sf-btn-sm" type="button" (click)="openEdit(course)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                  }
+                  <button class="sf-btn-sm" type="button" (click)="openView(course)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="text-center py-4 sf-muted">
+                <i class="bi bi-collection fs-3 d-block mb-2"></i>
+                No courses found.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  }
+</div>
+
+<!-- Create Course Modal -->
+@if (showCreateModal()) {
+<div class="sf-modal-backdrop fade-in" (click)="closeCreate()">
+  <div class="sf-modal" (click)="$event.stopPropagation()">
+    <div class="sf-modal-header">
+      <h5 class="fw-bold mb-0"><i class="bi bi-plus-square me-2"></i>Create Course</h5>
+      <button class="sf-btn-ghost" type="button" (click)="closeCreate()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="sf-modal-body">
+      <form [formGroup]="createForm" (ngSubmit)="submitCreate()" novalidate>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between">
+            <label class="sf-label">Title <span class="text-danger">*</span></label>
+            <span class="sf-muted" style="font-size:11px;">
+              {{ createForm.get('title')?.value?.length ?? 0 }}/20
+            </span>
+          </div>
+          <input class="sf-input w-100" formControlName="title" placeholder="e.g. Secure Coding 101" maxlength="20"
+            [class.is-invalid]="createForm.get('title')?.invalid && createForm.get('title')?.touched" />
+          @if (createForm.get('title')?.invalid && createForm.get('title')?.touched) {
+          <div class="sf-field-error">Title is required and cannot exceed 20 characters.</div>
+          }
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between">
+            <label class="sf-label">Description <span class="text-danger">*</span></label>
+            <span class="sf-muted" style="font-size:11px;">
+              {{ createForm.get('description')?.value?.length ?? 0 }}/50
+            </span>
+          </div>
+          <textarea class="sf-input w-100" rows="3" formControlName="description" placeholder="Course overview…"
+            maxlength="50"
+            [class.is-invalid]="createForm.get('description')?.invalid && createForm.get('description')?.touched"></textarea>
+          @if (createForm.get('description')?.invalid && createForm.get('description')?.touched) {
+          <div class="sf-field-error">Description is required and cannot exceed 50 characters.</div>
+          }
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col">
+            <label class="sf-label">Duration (hours) <span class="text-danger">*</span></label>
+            <input type="number" class="sf-input w-100" formControlName="duration" min="1" max="100" step="1"
+              [class.is-invalid]="createForm.get('duration')?.invalid && createForm.get('duration')?.touched" />
+            <div class="invalid-feedback">Duration must be between 1 and 100 hours.</div>
+          </div>
+          <div class="col">
+            <label class="sf-label">Status</label>
+            <select class="sf-select w-100" formControlName="status">
+              <option value="false">Draft</option>
+              <option value="true">Live</option>
+            </select>
+          </div>
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+          <button type="button" class="sf-btn-ghost" (click)="closeCreate()">Cancel</button>
+          <button type="submit" class="sf-btn-primary" [disabled]="createLoading()">
+            @if (createLoading()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Create Course
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+}
+
+@if (showViewModal() && selectedCourse()) {
+<div class="sf-modal-backdrop fade-in" (click)="closeView()">
+  <div class="sf-modal" (click)="$event.stopPropagation()">
+    <div class="sf-modal-header">
+      <h5 class="fw-bold mb-0"><i class="bi bi-eye me-2"></i>Course Details</h5>
+      <button class="sf-btn-ghost" type="button" (click)="closeView()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="sf-modal-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-4 sf-muted">Course ID</dt>
+        <dd class="col-sm-8">{{ selectedCourse()!.courseID }}</dd>
+
+        <dt class="col-sm-4 sf-muted">Title</dt>
+        <dd class="col-sm-8 fw-semibold">{{ selectedCourse()!.title }}</dd>
+
+        <dt class="col-sm-4 sf-muted">Description</dt>
+        <dd class="col-sm-8">{{ selectedCourse()!.description || '—' }}</dd>
+
+        <dt class="col-sm-4 sf-muted">Duration</dt>
+        <dd class="col-sm-8">{{ selectedCourse()!.duration }}h</dd>
+
+        <dt class="col-sm-4 sf-muted">Status</dt>
+        <dd class="col-sm-8">
+          <app-status-badge [status]="selectedCourse()!.status ? 'Live' : 'Draft'"></app-status-badge>
+        </dd>
+
+        <dt class="col-sm-4 sf-muted">Trainer ID</dt>
+        <dd class="col-sm-8">{{ selectedCourse()!.trainerID ?? '—' }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+}
+
+@if (showEditModal() && selectedCourse()) {
+<div class="sf-modal-backdrop fade-in" (click)="closeEdit()">
+  <div class="sf-modal" (click)="$event.stopPropagation()">
+    <div class="sf-modal-header">
+      <h5 class="fw-bold mb-0"><i class="bi bi-pencil me-2"></i>Edit Course Status</h5>
+      <button class="sf-btn-ghost" type="button" (click)="closeEdit()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="sf-modal-body">
+      <p class="sf-muted mb-3">Updating status for: <strong>{{ selectedCourse()!.title }}</strong></p>
+      <div class="mb-3">
+        <label class="sf-label">Status</label>
+        <select class="sf-select w-100" [ngModel]="editStatus()" (ngModelChange)="editStatus.set($event)">
+          <option value="false">Draft</option>
+          <option value="true">Live</option>
+        </select>
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <button type="button" class="sf-btn-ghost" (click)="closeEdit()">Cancel</button>
+        <button type="button" class="sf-btn-primary" [disabled]="updateLoading()" (click)="submitUpdate()">
+          @if (updateLoading()) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          }
+          Update
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+}

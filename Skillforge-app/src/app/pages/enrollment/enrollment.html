@@ -1,0 +1,69 @@
+<div class="sf-page fade-in">
+  <div class="sf-page-header">
+    <div>
+      <nav aria-label="breadcrumb"><ol class="breadcrumb sf-breadcrumb mb-1">
+        <li class="breadcrumb-item sf-muted">Home</li>
+        <li class="breadcrumb-item active">Enrollment & Attendance</li>
+      </ol></nav>
+      <h2 class="sf-page-title">Enrollment & Attendance</h2>
+    </div>
+    @if (canAssign) {
+      <button class="sf-btn-primary"><i class="bi bi-people me-1"></i>Assign to Team</button>
+    }
+    @if (!canAssign) {
+      <button class="sf-btn-primary"><i class="bi bi-plus-circle me-1"></i>Self Enroll</button>
+    }
+  </div>
+
+  <div class="sf-card mb-3">
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+      <select class="sf-select" style="width:auto;" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+        <option>All</option>
+        <option>Enrolled</option>
+        <option>Waitlist</option>
+        <option>Completed</option>
+      </select>
+      <button class="sf-btn-ghost" type="button" (click)="statusFilter.set('All')">
+        <i class="bi bi-x-circle me-1"></i>Reset
+      </button>
+    </div>
+  </div>
+
+  <div class="sf-card">
+    <div class="table-responsive">
+      <table class="table sf-table mb-0">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Course</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Attendance</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of filtered; track e.employee + e.course) {
+            <tr class="sf-table-row">
+              <td class="fw-semibold">{{ e.employee }}</td>
+              <td>{{ e.course }}</td>
+              <td class="sf-muted">{{ e.date }}</td>
+              <td><app-status-badge [status]="e.status"></app-status-badge></td>
+              <td><app-status-badge [status]="e.attendance"></app-status-badge></td>
+              <td>
+                <div class="d-flex gap-1">
+                  <button class="sf-btn-sm" type="button">Mark</button>
+                  @if (canAssign && e.status === 'Waitlist') {
+                    <button class="sf-btn-sm sf-btn-sm-primary" type="button">Approve</button>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="text-center py-4 sf-muted">No enrollment records found.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

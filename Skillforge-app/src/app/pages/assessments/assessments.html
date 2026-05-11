@@ -1,0 +1,69 @@
+<div class="sf-page fade-in">
+  <div class="sf-page-header">
+    <div>
+      <nav aria-label="breadcrumb"><ol class="breadcrumb sf-breadcrumb mb-1">
+        <li class="breadcrumb-item sf-muted">Home</li>
+        <li class="breadcrumb-item active">Assessments & Certifications</li>
+      </ol></nav>
+      <h2 class="sf-page-title">Assessments & Certifications</h2>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Assessments -->
+    <div class="col-md-6">
+      <div class="sf-card h-100">
+        <div class="sf-card-title d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-clipboard-check me-2"></i>Assessments</span>
+          @if (canCreate) {
+            <button class="sf-btn-sm sf-btn-sm-primary" type="button">
+              <i class="bi bi-plus me-1"></i>New
+            </button>
+          }
+        </div>
+        <div class="table-responsive mt-2">
+          <table class="table sf-table mb-0">
+            <thead><tr><th>Course</th><th>Type</th><th>Max Score</th><th>Date</th><th></th></tr></thead>
+            <tbody>
+              @for (a of assessments; track a.course) {
+                <tr class="sf-table-row">
+                  <td class="fw-semibold">{{ a.course }}</td>
+                  <td><span class="sf-chip">{{ a.type }}</span></td>
+                  <td>{{ a.maxScore }}</td>
+                  <td class="sf-muted">{{ a.date }}</td>
+                  <td><button class="sf-btn-sm" type="button">Manage</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Certifications -->
+    <div class="col-md-6">
+      <div class="sf-card h-100">
+        <div class="sf-card-title d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-patch-check me-2"></i>Certifications</span>
+          <button class="sf-btn-sm" type="button"><i class="bi bi-download me-1"></i>Export</button>
+        </div>
+        <div class="table-responsive mt-2">
+          <table class="table sf-table mb-0">
+            <thead><tr><th>Employee</th><th>Course</th><th>Issued</th><th>Expiry</th><th>Status</th></tr></thead>
+            <tbody>
+              @for (c of certifications; track c.employee + c.course) {
+                <tr class="sf-table-row">
+                  <td class="fw-semibold">{{ c.employee }}</td>
+                  <td>{{ c.course }}</td>
+                  <td class="sf-muted">{{ c.issued }}</td>
+                  <td class="sf-muted">{{ c.expiry }}</td>
+                  <td><app-status-badge [status]="c.status"></app-status-badge></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

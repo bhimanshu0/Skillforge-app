@@ -122,6 +122,33 @@ export interface AuditLog {
   timestamp?: string;
 }
 
+// API response shapes for compliance & audit
+export interface AuditLogItem {
+  auditID: number;
+  userID?: number;
+  action: string;
+  resource: string;
+  timestamp: string;
+}
+
+export interface ComplianceItem {
+  complianceId: number;
+  employeeId: number;
+  employeeName: string;
+  certificationId: number;
+  courseName: string;
+  status: boolean;
+  date: string;
+}
+
+export interface ComplianceSummary {
+  totalEmployees: number;
+  compliantCount: number;
+  nonCompliantCount: number;
+  complianceRate: number;
+  records: ComplianceItem[];
+}
+
 export interface ApiResponse<T> {
   data?: T;
   message?: string;

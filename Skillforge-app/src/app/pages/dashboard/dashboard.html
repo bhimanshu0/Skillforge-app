@@ -1,0 +1,164 @@
+<div class="sf-page fade-in">
+  <!-- Header -->
+  <div class="sf-page-header">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb sf-breadcrumb mb-1">
+          <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+      </nav>
+      <h2 class="sf-page-title">
+        Good day, {{ userName() }}
+        <span class="sf-chip ms-2">{{ role() }}</span>
+      </h2>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <app-spinner></app-spinner>
+  } @else {
+
+  <!-- KPI Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <app-kpi-card
+        title="Available Courses"
+        [value]="courseCount()"
+        subtitle="In the catalog"
+        icon="bi-collection-fill"
+        trend="+2 this week"
+        [trendUp]="true">
+      </app-kpi-card>
+    </div>
+    <div class="col-md-4">
+      <app-kpi-card
+        title="Certifications Expiring"
+        value="2"
+        subtitle="Within 30 days"
+        icon="bi-patch-exclamation"
+        trend="-1 vs last week"
+        [trendUp]="false">
+      </app-kpi-card>
+    </div>
+    <div class="col-md-4">
+      <app-kpi-card
+        title="Completion Rate"
+        value="78%"
+        subtitle="Team average"
+        icon="bi-graph-up"
+        trend="+5% this month"
+        [trendUp]="true">
+      </app-kpi-card>
+    </div>
+  </div>
+
+  <!-- Content Row -->
+  <div class="row g-3">
+    <!-- Quick Actions -->
+    <div class="col-md-5">
+      <div class="sf-card h-100">
+        <div class="sf-card-title">
+          <i class="bi bi-lightning-charge-fill text-warning"></i>
+          Quick Actions
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          @if (isEmployee) {
+            <a routerLink="/catalog" class="sf-btn-primary">
+              <i class="bi bi-plus-circle me-1"></i>Enroll in Course
+            </a>
+          }
+          @if (isTrainer) {
+            <a routerLink="/catalog" class="sf-btn-primary">
+              <i class="bi bi-plus-square me-1"></i>Create Course
+            </a>
+            <a routerLink="/assessments" class="sf-btn-outline">
+              <i class="bi bi-clipboard-plus me-1"></i>New Assessment
+            </a>
+          }
+          @if (isManager) {
+            <a routerLink="/enrollment" class="sf-btn-primary">
+              <i class="bi bi-people me-1"></i>Assign Training
+            </a>
+            <a routerLink="/reports" class="sf-btn-outline">
+              <i class="bi bi-graph-up me-1"></i>Team Report
+            </a>
+          }
+          @if (isHR) {
+            <a routerLink="/compliance" class="sf-btn-primary">
+              <i class="bi bi-shield-check me-1"></i>Compliance Check
+            </a>
+            <a routerLink="/reports" class="sf-btn-outline">
+              <i class="bi bi-file-earmark-bar-graph me-1"></i>Run Report
+            </a>
+          }
+          @if (isAdmin) {
+            <a routerLink="/iam" class="sf-btn-primary">
+              <i class="bi bi-people-fill me-1"></i>Manage Users
+            </a>
+            <a routerLink="/catalog" class="sf-btn-outline">
+              <i class="bi bi-collection me-1"></i>Manage Catalog
+            </a>
+          }
+          <a routerLink="/catalog" class="sf-btn-ghost">
+            <i class="bi bi-search me-1"></i>Browse Catalog
+          </a>
+          <a routerLink="/assessments" class="sf-btn-ghost">
+            <i class="bi bi-patch-check me-1"></i>My Certifications
+          </a>
+        </div>
+
+        <!-- Notification count chip -->
+        @if (notifCount() > 0) {
+          <div class="mt-4 d-flex align-items-center gap-2">
+            <a routerLink="/notifications" class="sf-chip d-inline-flex align-items-center gap-1 text-decoration-none">
+              <i class="bi bi-bell-fill"></i>
+              {{ notifCount() }} unread notification{{ notifCount() !== 1 ? 's' : '' }}
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="col-md-7">
+      <div class="sf-card h-100">
+        <div class="sf-card-title">
+          <i class="bi bi-calendar3 text-primary"></i>
+          Upcoming Events
+        </div>
+        <div class="table-responsive mt-2">
+          <table class="table sf-table mb-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Course</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ev of upcomingEvents; track ev.date) {
+                <tr class="sf-table-row">
+                  <td class="sf-muted">{{ ev.date }}</td>
+                  <td class="fw-semibold">{{ ev.course }}</td>
+                  <td>
+                    <span class="sf-chip">{{ ev.type }}</span>
+                  </td>
+                  <td>
+                    <app-status-badge [status]="ev.status"></app-status-badge>
+                  </td>
+                  <td>
+                    <button class="sf-btn-sm" type="button">Details</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  } <!-- end else -->
+</div>

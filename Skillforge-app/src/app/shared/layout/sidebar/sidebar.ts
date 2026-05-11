@@ -27,7 +27,7 @@ export class SidebarComponent {
     { label: 'Enrollment & Attendance',path: '/enrollment',     icon: 'bi-person-check',     roles: ['Employee','Trainer','Manager','HR','Admin'] },
     { label: 'Assessments & Certs',    path: '/assessments',    icon: 'bi-patch-check',      roles: ['Employee','Trainer','Manager','HR','Admin'] },
     { label: 'Competency & Skill Gaps',path: '/competency',     icon: 'bi-bar-chart-steps',  roles: ['Employee','Trainer','Manager','HR','Admin'] },
-    { label: 'Compliance & Audit',     path: '/compliance',     icon: 'bi-shield-check',     roles: ['Manager','HR','Admin'] },
+    { label: 'Compliance & Audit',     path: '/compliance',     icon: 'bi-shield-check',     roles: ['HR','Admin'] },
     { label: 'Reports & Analytics',    path: '/reports',        icon: 'bi-graph-up-arrow',   roles: ['Manager','HR','Admin'] },
     { label: 'Notifications',          path: '/notifications',  icon: 'bi-bell',             roles: ['Employee','Trainer','Manager','HR','Admin'] },
     { label: 'Identity & Access',      path: '/iam',            icon: 'bi-people',           roles: ['Admin'] },
