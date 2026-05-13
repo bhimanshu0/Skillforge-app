@@ -24,6 +24,7 @@ export class SidebarComponent {
   readonly navItems: NavItem[] = [
     { label: 'Dashboard',              path: '/dashboard',      icon: 'bi-speedometer2',     roles: ['Employee','Trainer','Manager','HR','Admin'] },
     { label: 'Training Catalog',       path: '/catalog',        icon: 'bi-collection',       roles: ['Employee','Trainer','Manager','HR','Admin'] },
+    { label: 'Modules',                path: '/modules',        icon: 'bi-layers',           roles: ['Employee','Trainer','Manager','HR','Admin'] },
     { label: 'Enrollment & Attendance',path: '/enrollment',     icon: 'bi-person-check',     roles: ['Employee','Trainer','Manager','HR','Admin'] },
     { label: 'Assessments & Certs',    path: '/assessments',    icon: 'bi-patch-check',      roles: ['Employee','Trainer','Manager','HR','Admin'] },
     { label: 'Competency & Skill Gaps',path: '/competency',     icon: 'bi-bar-chart-steps',  roles: ['Employee','Trainer','Manager','HR','Admin'] },

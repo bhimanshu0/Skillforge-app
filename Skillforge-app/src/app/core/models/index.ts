@@ -154,3 +154,28 @@ export interface ApiResponse<T> {
   message?: string;
   statusCode?: number;
 }
+
+export interface Module {
+  moduleID: number;
+  courseID: number;
+  courseTitle?: string;
+  title: string;
+  contentURI: string;
+  duration: number;
+  status: boolean;
+}
+
+export interface CreateModuleRequest {
+  courseID: number;
+  title: string;
+  contentURI: string;
+  duration: number;
+  status: boolean;
+}
+
+export interface UpdateModuleRequest {
+  title?: string;
+  contentURI?: string;
+  duration?: number;
+  status?: boolean;
+}
