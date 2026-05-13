@@ -1,69 +1,519 @@
 <div class="sf-page fade-in">
+
+  @if (!canAccess) {
+    <!-- Access Denied Message -->
+    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh;">
+      <div class="sf-card text-center" style="max-width: 420px; padding: 3rem 2rem;">
+        <i class="bi bi-shield-lock-fill fs-1 mb-3" style="color: var(--sf-muted);"></i>
+        <h4 class="fw-semibold mb-2">Access Restricted</h4>
+        <p class="sf-muted mb-0">
+          The Assessments section is only accessible to <strong>Trainers</strong>.
+        </p>
+        <p class="sf-muted small mt-2">
+          Please contact your administrator if you believe this is a mistake.
+        </p>
+      </div>
+    </div>
+
+  } @else {
+    <!-- All your existing assessment content goes here -->
+    <!-- src/app/pages/assessments/assessments.html -->
+
+<div class="sf-page fade-in">
+
+  <!-- ── Page Header ──────────────────────────────────────────────────────── -->
   <div class="sf-page-header">
     <div>
-      <nav aria-label="breadcrumb"><ol class="breadcrumb sf-breadcrumb mb-1">
-        <li class="breadcrumb-item sf-muted">Home</li>
-        <li class="breadcrumb-item active">Assessments & Certifications</li>
-      </ol></nav>
-      <h2 class="sf-page-title">Assessments & Certifications</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb sf-breadcrumb mb-1">
+          <li class="breadcrumb-item sf-muted">Home</li>
+          <li class="breadcrumb-item active">Assessments</li>
+        </ol>
+      </nav>
+      <h2 class="sf-page-title">Assessments</h2>
+    </div>
+    @if (canManage) {
+      <button class="sf-btn-primary" type="button" (click)="openCreate()">
+        <i class="bi bi-plus-circle me-1"></i>New Assessment
+      </button>
+    }
+  </div>
+
+  <!-- ── Toast ────────────────────────────────────────────────────────────── -->
+  @if (toast()) {
+    <div class="sf-toast fade-in" [class.sf-toast-error]="toastType() === 'error'">
+      <i class="bi" [ngClass]="toastType() === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+      {{ toast() }}
+    </div>
+  }
+
+  <!-- ── Filters ───────────────────────────────────────────────────────────── -->
+  <div class="sf-card mb-3">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+
+      <!-- Course filter -->
+      <select class="sf-select" style="width:auto;"
+        [ngModel]="filterCourseId()"
+        (ngModelChange)="filterCourseId.set($event ? +$event : null)">
+        <option [ngValue]="null">All Courses</option>
+        @for (c of courses(); track c.courseID) {
+          <option [ngValue]="c.courseID">{{ c.title }}</option>
+        }
+      </select>
+
+      <!-- Type filter -->
+      <select class="sf-select" style="width:auto;"
+        [ngModel]="filterType()"
+        (ngModelChange)="filterType.set($event)">
+        <option value="">All Types</option>
+        <option>Quiz</option>
+        <option>Exam</option>
+        <option>Practical</option>
+      </select>
+
+      <!-- Date range -->
+      <input class="sf-input" type="date" style="width:auto;"
+        [ngModel]="filterFrom()" (ngModelChange)="filterFrom.set($event)"
+        title="From date" />
+      <span class="sf-muted small">to</span>
+      <input class="sf-input" type="date" style="width:auto;"
+        [ngModel]="filterTo()" (ngModelChange)="filterTo.set($event)"
+        title="To date" />
+
+      <button class="sf-btn-ghost" type="button" (click)="resetFilters()">
+        <i class="bi bi-x-circle me-1"></i>Reset
+      </button>
+
+      <span class="ms-auto sf-muted small">
+        {{ filteredAssessments().length }} result(s)
+      </span>
     </div>
   </div>
 
-  <div class="row g-3">
-    <!-- Assessments -->
-    <div class="col-md-6">
-      <div class="sf-card h-100">
-        <div class="sf-card-title d-flex justify-content-between align-items-center">
-          <span><i class="bi bi-clipboard-check me-2"></i>Assessments</span>
-          @if (canCreate) {
-            <button class="sf-btn-sm sf-btn-sm-primary" type="button">
-              <i class="bi bi-plus me-1"></i>New
-            </button>
-          }
+  <!-- ── Assessment Table ──────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <app-spinner></app-spinner>
+  } @else {
+    <div class="sf-card">
+      @if (filteredAssessments().length === 0) {
+        <div class="text-center py-5 sf-muted">
+          <i class="bi bi-clipboard-x fs-1 d-block mb-2"></i>
+          No assessments found. @if (canManage) { Click <strong>New Assessment</strong> to create one. }
         </div>
-        <div class="table-responsive mt-2">
-          <table class="table sf-table mb-0">
-            <thead><tr><th>Course</th><th>Type</th><th>Max Score</th><th>Date</th><th></th></tr></thead>
+      } @else {
+        <div class="table-responsive">
+          <table class="table sf-table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Course</th>
+                <th>Type</th>
+                <th>Max Score</th>
+                <th>Scheduled Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
             <tbody>
-              @for (a of assessments; track a.course) {
+              @for (a of filteredAssessments(); track a.assessmentId) {
                 <tr class="sf-table-row">
-                  <td class="fw-semibold">{{ a.course }}</td>
+                  <td class="sf-muted small">{{ a.assessmentId }}</td>
+                  <td class="fw-semibold">{{ a.courseName ?? getCourseName(a.courseId!) }}</td>
                   <td><span class="sf-chip">{{ a.type }}</span></td>
                   <td>{{ a.maxScore }}</td>
-                  <td class="sf-muted">{{ a.date }}</td>
-                  <td><button class="sf-btn-sm" type="button">Manage</button></td>
+                  <td class="sf-muted">
+                    {{ a.scheduledDate ? (a.scheduledDate | date:'MMM d, y') : '—' }}
+                  </td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <!-- View -->
+                      <button class="sf-btn-sm" type="button" title="View details" (click)="openView(a)">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      @if (canManage) {
+                        <!-- Edit -->
+                        <button class="sf-btn-sm sf-btn-sm-primary" type="button" title="Edit" (click)="openEdit(a)">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <!-- Results -->
+                        <button class="sf-btn-sm" type="button" title="Manage results"
+                          style="background:var(--sf-surface-2);color:var(--sf-accent);"
+                          (click)="openResults(a)">
+                          <i class="bi bi-bar-chart-line"></i>
+                        </button>
+                        <!-- Delete -->
+                        <button class="sf-btn-sm sf-btn-sm-danger" type="button" title="Delete" (click)="confirmDelete(a)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      }
+                    </div>
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
-      </div>
+      }
     </div>
+  }
 
-    <!-- Certifications -->
-    <div class="col-md-6">
-      <div class="sf-card h-100">
-        <div class="sf-card-title d-flex justify-content-between align-items-center">
-          <span><i class="bi bi-patch-check me-2"></i>Certifications</span>
-          <button class="sf-btn-sm" type="button"><i class="bi bi-download me-1"></i>Export</button>
-        </div>
-        <div class="table-responsive mt-2">
-          <table class="table sf-table mb-0">
-            <thead><tr><th>Employee</th><th>Course</th><th>Issued</th><th>Expiry</th><th>Status</th></tr></thead>
-            <tbody>
-              @for (c of certifications; track c.employee + c.course) {
-                <tr class="sf-table-row">
-                  <td class="fw-semibold">{{ c.employee }}</td>
-                  <td>{{ c.course }}</td>
-                  <td class="sf-muted">{{ c.issued }}</td>
-                  <td class="sf-muted">{{ c.expiry }}</td>
-                  <td><app-status-badge [status]="c.status"></app-status-badge></td>
-                </tr>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CREATE MODAL
+════════════════════════════════════════════════════════════════════════════ -->
+@if (showCreateModal()) {
+  <div class="sf-modal-overlay" (click)="closeCreate()">
+    <div class="sf-modal" (click)="$event.stopPropagation()">
+      <div class="sf-modal-header">
+        <h5 class="sf-modal-title"><i class="bi bi-clipboard-plus me-2"></i>New Assessment</h5>
+        <button class="sf-modal-close" type="button" (click)="closeCreate()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
+        <div class="sf-modal-body">
+
+          <!-- Course -->
+          <div class="mb-3">
+            <label class="sf-label">Course <span class="text-danger">*</span></label>
+            <select class="sf-select" formControlName="courseId"
+              [class.is-invalid]="createForm.get('courseId')?.invalid && createForm.get('courseId')?.touched">
+              <option [ngValue]="null" disabled>Select a course…</option>
+              @for (c of courses(); track c.courseID) {
+                <option [ngValue]="c.courseID">{{ c.title }}</option>
               }
-            </tbody>
-          </table>
+            </select>
+            @if (createForm.get('courseId')?.invalid && createForm.get('courseId')?.touched) {
+              <div class="sf-field-error">Course is required.</div>
+            }
+          </div>
+
+          <!-- Type -->
+          <div class="mb-3">
+            <label class="sf-label">Assessment Type <span class="text-danger">*</span></label>
+            <select class="sf-select" formControlName="type"
+              [class.is-invalid]="createForm.get('type')?.invalid && createForm.get('type')?.touched">
+              <option>Quiz</option>
+              <option>Exam</option>
+              <option>Practical</option>
+            </select>
+          </div>
+
+          <!-- Max Score -->
+          <div class="mb-3">
+            <label class="sf-label">Max Score <span class="text-danger">*</span></label>
+            <input class="sf-input" type="number" formControlName="maxScore" min="1" max="100"
+              [class.is-invalid]="createForm.get('maxScore')?.invalid && createForm.get('maxScore')?.touched" />
+            @if (createForm.get('maxScore')?.invalid && createForm.get('maxScore')?.touched) {
+              <div class="sf-field-error">Max score must be between 1 and 100.</div>
+            }
+          </div>
+
+          <!-- Scheduled Date -->
+          <div class="mb-3">
+            <label class="sf-label">Scheduled Date</label>
+            <input class="sf-input" type="date" formControlName="scheduledDate" />
+          </div>
+
         </div>
+
+        <div class="sf-modal-footer">
+          <button class="sf-btn-ghost" type="button" (click)="closeCreate()">Cancel</button>
+          <button class="sf-btn-primary" type="submit" [disabled]="createLoading()">
+            @if (createLoading()) { <span class="spinner-border spinner-border-sm me-1" role="status"></span> }
+            @else { <i class="bi bi-check-circle me-1"></i>Create }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     VIEW MODAL
+════════════════════════════════════════════════════════════════════════════ -->
+@if (showViewModal()) {
+  <div class="sf-modal-overlay" (click)="closeView()">
+    <div class="sf-modal" (click)="$event.stopPropagation()">
+      <div class="sf-modal-header">
+        <h5 class="sf-modal-title"><i class="bi bi-clipboard-data me-2"></i>Assessment Details</h5>
+        <button class="sf-modal-close" type="button" (click)="closeView()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="sf-modal-body">
+        @if (viewLoading()) {
+          <app-spinner></app-spinner>
+        } @else if (selectedAssessment(); as a) {
+          <dl class="sf-detail-list">
+            <div class="sf-detail-row">
+              <dt>Assessment ID</dt>
+              <dd>#{{ a.assessmentId }}</dd>
+            </div>
+            <div class="sf-detail-row">
+              <dt>Course</dt>
+              <dd>{{ a.courseName ?? getCourseName(a.courseId!) }}</dd>
+            </div>
+            <div class="sf-detail-row">
+              <dt>Type</dt>
+              <dd><span class="sf-chip">{{ a.type }}</span></dd>
+            </div>
+            <div class="sf-detail-row">
+              <dt>Max Score</dt>
+              <dd>{{ a.maxScore }}</dd>
+            </div>
+            <div class="sf-detail-row">
+              <dt>Scheduled Date</dt>
+              <dd>{{ a.scheduledDate ? (a.scheduledDate | date:'MMMM d, y') : 'Not scheduled' }}</dd>
+            </div>
+          </dl>
+        }
+      </div>
+
+      <div class="sf-modal-footer">
+        @if (canManage && selectedAssessment()) {
+          <button class="sf-btn-sm sf-btn-sm-primary" type="button"
+            (click)="closeView(); openEdit(selectedAssessment()!)">
+            <i class="bi bi-pencil me-1"></i>Edit
+          </button>
+          <button class="sf-btn-sm" type="button"
+            style="background:var(--sf-surface-2);color:var(--sf-accent);"
+            (click)="closeView(); openResults(selectedAssessment()!)">
+            <i class="bi bi-bar-chart-line me-1"></i>Results
+          </button>
+        }
+        <button class="sf-btn-ghost ms-auto" type="button" (click)="closeView()">Close</button>
       </div>
     </div>
   </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     EDIT MODAL
+════════════════════════════════════════════════════════════════════════════ -->
+@if (showEditModal()) {
+  <div class="sf-modal-overlay" (click)="closeEdit()">
+    <div class="sf-modal" (click)="$event.stopPropagation()">
+      <div class="sf-modal-header">
+        <h5 class="sf-modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Assessment</h5>
+        <button class="sf-modal-close" type="button" (click)="closeEdit()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="editForm" (ngSubmit)="submitEdit()">
+        <div class="sf-modal-body">
+
+          <!-- Course (read-only) -->
+          <div class="mb-3">
+            <label class="sf-label">Course</label>
+            <input class="sf-input" type="text" readonly
+              [value]="selectedAssessment()?.courseName ?? getCourseName(selectedAssessment()?.courseId!)"
+              style="opacity:.7;cursor:not-allowed;" />
+          </div>
+
+          <!-- Type -->
+          <div class="mb-3">
+            <label class="sf-label">Assessment Type <span class="text-danger">*</span></label>
+            <select class="sf-select" formControlName="type">
+              <option>Quiz</option>
+              <option>Exam</option>
+              <option>Practical</option>
+            </select>
+          </div>
+
+          <!-- Max Score -->
+          <div class="mb-3">
+            <label class="sf-label">Max Score <span class="text-danger">*</span></label>
+            <input class="sf-input" type="number" formControlName="maxScore" min="1" max="100"
+              [class.is-invalid]="editForm.get('maxScore')?.invalid && editForm.get('maxScore')?.touched" />
+            @if (editForm.get('maxScore')?.invalid && editForm.get('maxScore')?.touched) {
+              <div class="sf-field-error">Max score must be between 1 and 100.</div>
+            }
+          </div>
+
+          <!-- Scheduled Date -->
+          <div class="mb-3">
+            <label class="sf-label">Scheduled Date</label>
+            <input class="sf-input" type="date" formControlName="scheduledDate" />
+          </div>
+
+        </div>
+
+        <div class="sf-modal-footer">
+          <button class="sf-btn-ghost" type="button" (click)="closeEdit()">Cancel</button>
+          <button class="sf-btn-primary" type="submit" [disabled]="editLoading()">
+            @if (editLoading()) { <span class="spinner-border spinner-border-sm me-1" role="status"></span> }
+            @else { <i class="bi bi-check-circle me-1"></i>Save Changes }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RESULTS MODAL
+════════════════════════════════════════════════════════════════════════════ -->
+@if (showResultsModal()) {
+  <div class="sf-modal-overlay" (click)="closeResults()">
+    <div class="sf-modal sf-modal-lg" (click)="$event.stopPropagation()">
+      <div class="sf-modal-header">
+        <h5 class="sf-modal-title">
+          <i class="bi bi-bar-chart-line me-2"></i>
+          Results —
+          <span class="sf-muted">
+            {{ resultsAssessment()?.courseName }} · {{ resultsAssessment()?.type }}
+            (Max: {{ resultsAssessment()?.maxScore }})
+          </span>
+        </h5>
+        <button class="sf-modal-close" type="button" (click)="closeResults()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="sf-modal-body">
+
+        <!-- Submit new result toggle -->
+        <div class="d-flex justify-content-end mb-3">
+          <button class="sf-btn-sm sf-btn-sm-primary" type="button"
+            (click)="showSubmitResult.set(!showSubmitResult())">
+            <i class="bi" [ngClass]="showSubmitResult() ? 'bi-dash' : 'bi-plus'"></i>
+            {{ showSubmitResult() ? 'Cancel' : 'Submit Result' }}
+          </button>
+        </div>
+
+        <!-- Submit result form -->
+        @if (showSubmitResult()) {
+          <form [formGroup]="submitResultForm" (ngSubmit)="submitResult()"
+            class="sf-card mb-3" style="background:var(--sf-surface-2);">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-5">
+                <label class="sf-label">Employee ID <span class="text-danger">*</span></label>
+                <input class="sf-input" type="number" formControlName="employeeID"
+                  placeholder="Enter employee ID"
+                  [class.is-invalid]="submitResultForm.get('employeeID')?.invalid && submitResultForm.get('employeeId')?.touched" />
+                @if (submitResultForm.get('employeeID')?.invalid && submitResultForm.get('employeeID')?.touched) {
+                  <div class="sf-field-error">Valid employee ID required.</div>
+                }
+              </div>
+              <div class="col-md-4">
+                <label class="sf-label">
+                  Score <span class="text-danger">*</span>
+                  <span class="sf-muted ms-1">(max {{ resultsAssessment()?.maxScore }})</span>
+                </label>
+                <input class="sf-input" type="number" formControlName="score"
+                  [max]="resultsAssessment()?.maxScore ?? 100" min="0"
+                  [class.is-invalid]="submitResultForm.get('score')?.invalid && submitResultForm.get('score')?.touched" />
+              </div>
+              <div class="col-md-3">
+                <button class="sf-btn-primary w-100" type="submit" [disabled]="submitResultLoading()">
+                  @if (submitResultLoading()) { <span class="spinner-border spinner-border-sm me-1" role="status"></span> }
+                  @else { Submit }
+                </button>
+              </div>
+            </div>
+          </form>
+        }
+
+        <!-- Results table -->
+        @if (resultsLoading()) {
+          <app-spinner></app-spinner>
+        } @else if (results().length === 0) {
+          <div class="text-center py-4 sf-muted">
+            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+            No results yet. Submit the first one above.
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table sf-table mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Score</th>
+                  <th>Pass %</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of results(); track r.employeeID) {
+                  <tr class="sf-table-row">
+                    <td class="fw-semibold">
+                      {{ r.employeeName ?? 'Employee #' + r.employeeID }}
+                    </td>
+
+                    <!-- Score cell — editable inline -->
+                    <td>
+                      @if (editingResult()?.employeeID === r.employeeID) {
+                        <input class="sf-input" type="number" style="width:80px;"
+                          [ngModel]="editResultScore()"
+                          (ngModelChange)="editResultScore.set($event)"
+                          [max]="resultsAssessment()?.maxScore ?? 100" min="0" />
+                      } @else {
+                        {{ r.score }} / {{ resultsAssessment()?.maxScore }}
+                      }
+                    </td>
+
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="sf-progress" style="width:80px;">
+                          <div class="sf-progress-bar"
+                            [style.width.%]="scorePercent(r.score, resultsAssessment()?.maxScore ?? 100)"
+                            [class.sf-progress-pass]="r.status === 'Pass'"
+                            [class.sf-progress-fail]="r.status === 'Fail'">
+                          </div>
+                        </div>
+                        <span class="small">{{ scorePercent(r.score, resultsAssessment()?.maxScore ?? 100) }}%</span>
+                      </div>
+                    </td>
+
+                    <td>
+                      <app-status-badge [status]="r.status"></app-status-badge>
+                    </td>
+
+                    <td>
+                      @if (editingResult()?.employeeID === r.employeeID) {
+                        <div class="d-flex gap-1">
+                          <button class="sf-btn-sm sf-btn-sm-primary" type="button"
+                            [disabled]="editResultLoading()" (click)="saveEditResult()">
+                            @if (editResultLoading()) { <span class="spinner-border spinner-border-sm me-1" role="status"></span> }
+                            @else { Save }
+                          </button>
+                          <button class="sf-btn-sm sf-btn-sm-danger" type="button" (click)="cancelEditResult()">
+                            Cancel
+                          </button>
+                        </div>
+                      } @else {
+                        <div class="d-flex gap-1">
+                          <button class="sf-btn-sm sf-btn-sm-primary" type="button"
+                            title="Edit score" (click)="startEditResult(r)">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button class="sf-btn-sm sf-btn-sm-danger" type="button"
+                            title="Delete result" (click)="deleteResult(r)">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+      <div class="sf-modal-footer">
+        <button class="sf-btn-ghost ms-auto" type="button" (click)="closeResults()">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+  }
+
 </div>

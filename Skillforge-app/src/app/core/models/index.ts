@@ -154,3 +154,43 @@ export interface ApiResponse<T> {
   message?: string;
   statusCode?: number;
 }
+
+export interface AssessmentFilter {
+  courseId?: number;
+  type?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
+export interface CreateAssessmentRequest {
+  courseId: number;
+  type: string;       // 'Quiz' | 'Exam' | 'Practical'
+  maxScore: number;
+  scheduledDate?: string;
+}
+
+export interface UpdateAssessmentRequest {
+  type?: string;
+  maxScore?: number;
+  scheduledDate?: string;
+}
+
+export interface AssessmentResult {
+  assessmentID: number;
+  employeeID: number;
+  employeeName?: string;
+  score: number;
+  status: string;    // true = pass, false = fail
+  reviewerId?: number;
+}
+
+export interface SubmitResultRequest {
+  assessmentId: number;
+  employeeId: number;
+  score: number;
+}
+
+export interface UpdateResultRequest {
+  score: number;
+}
+

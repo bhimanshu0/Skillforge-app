@@ -831,3 +831,69 @@ a { color: inherit; }
   .sf-content { padding: 14px; }
   .sf-page-header { flex-direction: column; align-items: flex-start; }
 }
+
+/* Modal large variant */
+.sf-modal-lg {
+  max-width: 760px;
+  width: 95%;
+}
+
+/* Detail list (View modal) */
+.sf-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+}
+.sf-detail-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--sf-border);
+}
+.sf-detail-row:last-child { border-bottom: none; }
+.sf-detail-row dt {
+  width: 140px;
+  flex-shrink: 0;
+  color: var(--sf-muted);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+.sf-detail-row dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--sf-text);
+}
+
+/* Progress bar (results) */
+.sf-progress {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--sf-border);
+  overflow: hidden;
+}
+.sf-progress-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  background: var(--sf-primary);
+}
+.sf-progress-pass { background: #22c55e; }
+.sf-progress-fail { background: #ef4444; }
+
+/* Danger button variant */
+.sf-btn-sm-danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+.sf-btn-sm-danger:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+/* Field error */
+.sf-field-error {
+  font-size: 0.78rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+}
