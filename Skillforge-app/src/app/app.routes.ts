@@ -24,6 +24,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.DashboardComponent) },
       { path: 'catalog', loadComponent: () => import('./pages/catalog/catalog').then(m => m.CatalogComponent) },
+      { path: 'modules', loadComponent: () => import('./pages/modules/modules').then(m => m.ModulesComponent) },
       { path: 'enrollment', loadComponent: () => import('./pages/enrollment/enrollment').then(m => m.EnrollmentComponent) },
       { path: 'assessments', loadComponent: () => import('./pages/assessments/assessments').then(m => m.AssessmentsComponent) },
       { path: 'competency', loadComponent: () => import('./pages/competency/competency').then(m => m.CompetencyComponent) },
