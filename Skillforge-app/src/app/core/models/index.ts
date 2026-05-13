@@ -87,15 +87,6 @@ export interface Certification {
   status?: string;
 }
 
-export interface Assessment {
-  assessmentId?: number;
-  courseId?: number;
-  courseName?: string;
-  type?: string;
-  maxScore?: number;
-  scheduledDate?: string;
-}
-
 export interface CompetencyMatrix {
   competencyId?: number;
   competencyName?: string;
@@ -155,6 +146,29 @@ export interface ApiResponse<T> {
   statusCode?: number;
 }
 
+// Backend AssessmentListDto returns:
+// { assessmentId, courseId, type (enum int), maxScore, date }
+export interface Assessment {
+  assessmentId?: number;   // matches AssessmentListDto.AssessmentId
+  courseId?: number;       // matches AssessmentListDto.CourseId
+  courseName?: string;
+  type?: string;           // we convert enum int → string on display
+  maxScore?: number;
+  date?: string;           // matches AssessmentListDto.Date
+  scheduledDate?: string;
+}
+
+// Backend ResultViewDto returns:
+// { employeeID, score, status (enum: 0=Pass,1=Fail) }
+// NOTE: assessmentID is NOT returned by backend — we carry it from the parent assessment
+export interface AssessmentResult {
+  assessmentId: number;    // we set this ourselves from the parent assessment
+  employeeID: number;      // matches ResultViewDto.EmployeeID
+  employeeName?: string;
+  score: number;           // matches ResultViewDto.Score
+  status: string;          // we convert 0→'Pass', 1→'Fail' in the service
+}
+
 export interface AssessmentFilter {
   courseId?: number;
   type?: string;
@@ -164,33 +178,26 @@ export interface AssessmentFilter {
 
 export interface CreateAssessmentRequest {
   courseId: number;
-  type: string;       // 'Quiz' | 'Exam' | 'Practical'
+  type: string;       // 'Quiz' | 'Exam' | 'Practical' — converted to int in service
   maxScore: number;
-  scheduledDate?: string;
 }
 
 export interface UpdateAssessmentRequest {
-  type?: string;
-  maxScore?: number;
-  scheduledDate?: string;
+  type: string;       // required in backend UpdateAssessmentRequestDto
+  maxScore: number;   // required in backend UpdateAssessmentRequestDto
 }
 
-export interface AssessmentResult {
-  assessmentID: number;
-  employeeID: number;
-  employeeName?: string;
-  score: number;
-  status: string;    // true = pass, false = fail
-  reviewerId?: number;
-}
-
+// Backend SubmitAssessmentResultDto:
+// { AssessmentID, EmployeeID, Score }
 export interface SubmitResultRequest {
-  assessmentId: number;
-  employeeId: number;
-  score: number;
+  AssessmentID: number;   // uppercase — exact match to C# property
+  EmployeeID: number;     // uppercase — exact match to C# property
+  Score: number;          // uppercase — exact match to C# property
 }
 
+// Backend UpdateResultDto:
+// { Score }
 export interface UpdateResultRequest {
-  score: number;
+  Score: number;          // uppercase — exact match to C# property
 }
 
